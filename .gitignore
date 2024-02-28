@@ -1,0 +1,4 @@
+moflix_env/
+**/__pycache__/
+settings.json
+requests_number.txt
