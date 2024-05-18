@@ -9,9 +9,3 @@
 * Run `install_dependincies.py`.
 * Run `setup.py`, and follow the installation steps.
 <hr/>
-
-<font color="#004D98">***VISCA***</font>
-<font color="#A50044">***BARÇA***</font>\
-<font color="#004D98">***VISCA***</font>
-<font color="#A50044">***CATALUÑA***</font>
-<hr/>
