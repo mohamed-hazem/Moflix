@@ -94,7 +94,7 @@ def get_m3_urls(watch_urls):
 
         # open the url in the browser
         webbrowser.open(url)
-        # minimize_browser()
+        minimize_browser()
 
         # get m3 url
         m3_url = check_file(i, title)
