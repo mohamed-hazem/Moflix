@@ -1,11 +1,46 @@
+<div align="center">
+
 # Moflix
 
-### Download Movies & TV Shows 🎬📽️📺
+![Python](https://img.shields.io/badge/python-%3E%3D3.7-blue)
+![Platform](https://img.shields.io/badge/platform-Windows-blue)
 
-## How to use
+### Download high-quality movies and TV shows effortlessly
 
-* Open *setup* folder.
-* Make sure you have python 3.x installed (if not, run `python-3.10.10-amd64.exe` file to install it).
-* Run `install_dependincies.py`.
-* Run `setup.py`, and follow the installation steps.
-<hr/>
+</div>
+
+
+## Features
+- Search for movies and TV shows
+- Download content in high quality
+- Search for available subtitles and download/extract them
+
+## Requirements
+- Windows OS
+- Python 3.7 or higher
+
+## Installation
+To install Moflix, simply run `setup.bat` file located in the `setup` directory:
+```bash
+setup/setup.bat
+```
+
+## Usage
+1. Run the app.
+2. Search for the movie or show you want to download.
+3. Click on the desired content to download it.
+3. Search for available subtitles, choose one, and provide its URL to download and extract it.
+
+## Technologies Used
+- **Python**: Backend functionality.
+- **HTML/CSS/JavaScript**: Web interface.
+- **Fiddler Classic**: For monitoring traffic.
+
+## Screenshots
+
+![Moflix Interface](./assets/Screenshot-1.png)
+![Moflix Interface](./assets/Screenshot-2.png)
+![Moflix Interface](./assets/Screenshot-3.png)
+![Moflix Interface](./assets/Screenshot-4.png)
+![Moflix Interface](./assets/Screenshot-5.png)
+![Moflix Interface](./assets/Screenshot-6.png)

@@ -1,3 +1,5 @@
-moflix_env/
-**/__pycache__/
+.venv/
+__pycache__
+test*.py
 settings.json
+splitters.txt

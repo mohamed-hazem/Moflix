@@ -1,156 +1,114 @@
 # Utils
-from utils_config import *
+from root_config import *
 from utils import *
 
-# App modules
-from capture_stage import capture_stage
-from download import get_quality, get_segments, download
-from recover_merge import check_missing, merge
-from movies_subtitles import subtitle
-# ================================================== #
+# Modules
+import traceback
 
-# Change working directory
-os.chdir(os.path.dirname(__file__))
-# -------------------------------------------------- #
+from app.capturer import Capturer, Fiddler
+from app.downloader import Downloader
+from app.merger import Merger
+# ===================================================================== #
 
-# Getting arguments
-if (len(sys.argv) != 8):
-    input(colored(" - Missing Arguments", "light_red"))
-    exit()
-else:
-    _, url, vtype, name, year, season, episodes, method = sys.argv
-# -------------------------------------------------- #
+class Main:
+    def __init__(self):
+        _, self.url, self.vtype, self.name, self.year, self.season, self.episodes, self.method = sys.argv
+        self.subtitle = False
+    # ---------------------------------------------- #
 
-try:
-    if (method == "main"):
-        # -- Main -- #
+    def preprocess_inputs(self):
+        if (self.vtype == "Movie"):
+            self.title = f"{self.name} ({self.year})"
+            self.main_title = self.title
+            self.subtitle = True
+        
+        elif (self.vtype == "TV"):
+            self.title = self.name
+            self.main_title = f"{self.title} S{self.season.zfill(2)}"
+            
+            self.season = int(self.season)
+            self.episodes = get_indices(self.episodes)
+            
+            if (self.episodes[0] in (None, 0)):
+                self.subtitle = True
+    # ---------------------------------------------- #
 
-        # id
-        vid = url.split("-")[-1]
-
-        # title, season and episodes
-        if (vtype == "Movie"):
-            title = f"{name} ({year})".replace(":", "")
-            url = url.replace("/movie/", "/watch-movie/")
-
-        elif (vtype == "TV"):
-            title = name.replace(":", "")
-            url = url.replace("/tv/", "/watch-tv/")
-            season = int(season)
-            episodes = get_episodes(episodes)
-    # -------------------------------------------------- #
-
-        # Show title
-        main_title = title if (vtype == "Movie") else f"{title} S{str(season).zfill(2)}"
-        show_title(main_title, c="light_yellow")
-
-        # Capture m3 urls, then stage items
-        capture_stage(url, vid, vtype, title, season, episodes)
-    # -------------------------------------------------- #
-
-        # Get staged items
+    def get_dl_item(self) -> dict[str, str]:
         with open(STAGE_FILE, "r") as f:
-            staged_item: dict = json.loads(f.read())[vid]
-    # -------------------------------------------------- #
-    
-    elif (method == "manual_main"):
-        # -- Manual Main -- #
-        close_browser()
-
-        with open(STAGE_FILE, "r") as stage_file:
-            staged_items: dict = json.loads(stage_file.read())
+            staged_items: dict = json.load(f)
         
-        if (staged_items == {}):
-            show_title("No items to download", c="light_green")
-            quit()
-    # -------------------------------------------------- #
+        if (not staged_items):
+            raise Exception("No items to download")
         
-        # Choose item to download
-        ids = list(staged_items.keys())
-        if (len(ids) > 1):
-            for i, vid in enumerate(ids):
-                item = staged_items[vid]
-                if (item["type"] == "TV"):
-                    eps = f"- ({len(list(item.keys())[3:])} Episodes)"
-                else:
-                    eps = ""
-                print(f" [{i+1}] {item['title']} {eps}")
-                
-            dl = int(input("\n What do you wanna download?: "))-1
-        else:
-            dl = 0
-
-        vid = ids[dl]
-        staged_item = staged_items[vid]
-    # -------------------------------------------------- #
-
-    # -- Continue to download the staged item -- # 
-
-    # If there are more than 1 episode, choose what to download
-    dl_titles = list(staged_item.keys())[3:]
-    if (len(dl_titles) > 1):
-        print("\n - Staged items:")
-        for i, item in enumerate(dl_titles):
-            print(f" [{i+1}] {item}")
-        indices = get_episodes(input("\n What do you wanna download?: "))
-        dl_titles = dl_titles[indices[0]: indices[1]]
-    # -------------------------------------------------- #
-
-    # Loop through all items to be downloaded
-    for dl_title in dl_titles:
-        m3_url = staged_item[dl_title]
-
-        # Get quality [Unstage file & Quit if user didn't choose quality]
-        quality = get_quality(m3_url)
-        if (quality is None):
-            unstage(vid, dl_title)
-            quit()
-
-        segments = get_segments(m3_url, quality)
-        path, tmp_path, tmp_exists = init_files(staged_item, dl_title)
-
-        # Download segments
-        show_title(f"Downloading {dl_title}", a="-", n=10)
-        if (tmp_exists):
-            missing_segments = check_missing(segments, tmp_path)
-            if (missing_segments):
-                download(missing_segments, m3_url, tmp_path, dl_title, quality, len(segments))
-        else:
-            download(segments, m3_url, tmp_path, dl_title, quality)
-        print()
-
-        # Download subtitle
-        if (staged_item["type"] == "Movie"):
-            threading.Thread(target=lambda: subtitle(dl_title)).start()
-
-        # Merge segments & Recover missing ones
-        while True:
-
-            # check missing segments
-            missing_segments = check_missing(segments, tmp_path)
-
-            if (missing_segments == False):
-                print(colored("\r Merging Segments ...".ljust(LPAD), "light_green"), end="")
-                merge(path, tmp_path, dl_title)
-                break
+        elif (self.method == "open-staged"):            
+            options = [staged_items[i]["title"] for i in staged_items]                
+            if (len(options) == 1):
+                idx = 0
             else:
-                download(missing_segments, m3_url, tmp_path, dl_title, quality, recover=True)
+                idx = choose(text="", options=options, prompt="what do you want to download", return_indices=True)
+            
+            self.vid = list(staged_items.keys())[idx]
 
-        # Unstage downloaded item
-        unstage(vid, dl_title)
-        print("\r", end="")
-        show_title(f"[{dl_title}] Downloaded Successfully", n=5, c="light_green")
-    # -------------------------------------------------- #
+        dl_item = staged_items[self.vid]
+        
+        return dl_item
+    # ---------------------------------------------- #
 
-    # Check if it's a start of season to download subtitles
-    if (vtype == "TV" and (episodes[0] is None or episodes[0] == 0)):
-        d_sub = input(f" Do you wanna download subtitle for {title} S{str(season).zfill(2)}? (y/n): ").strip().lower()
-        if (d_sub == "y"):
-            run_python("tvshows_subtitle.py", args=[url, name, str(season)])
-    # -------------------------------------------------- #
-    quit()
-    # -------------------------------------------------- #
+    def run(self):
+        self.preprocess_inputs()
 
-except Exception as e:
-    input(colored(e, "light_red"))
-# -------------------------------------------------- #
+        # capture, and stage the item
+        if (self.method == "auto"):
+            show_title(self.main_title, color="light_yellow")
+
+            self.vid = self.url.split("-")[-1]
+            capturer = Capturer(self.url, self.vid, self.vtype, self.title, self.season, self.episodes)
+            capturer.get_watch_urls()
+            capturer.m3u8_urls = Fiddler().capture_urls(watch_urls=capturer.watch_urls)
+            capturer.stage()
+        
+        # get item to download
+        dl_item = self.get_dl_item()
+
+        # get titles (items) to download
+        dl_titles = list(dl_item.keys())[3:]
+        if (len(dl_titles) > 1):
+            dl_titles = choose(text="Episodes:", prompt="choose episodes to download e.g. 6, 9",
+                                options=dl_titles, choose_one=False)
+
+        # loop through titles to download them
+        for dl_title in dl_titles:
+
+            # download item segments
+            show_title(text=f"Downloading {dl_title}", padding_char="-", padding_count=20)
+            downloader = Downloader(dl_item, dl_title)
+            downloader.config_quality()
+            downloader.get_segments()
+            downloader.init_files()
+            downloader.download()
+
+            # merge downloaded segments
+            show_step(text="merging segments ...", color="light_green", nl=False)
+            Merger(downloader.tmp_path, dl_title).merge()
+
+            # unstage downloaded item
+            Capturer.unstage(self.vid, dl_title)
+            show_title(f"[{dl_title}] Downloaded Successfully", padding_char="-", padding_count=20,
+                        color="light_green", pl=True)
+            
+            # download subtitles
+            if (self.subtitle):
+                decision = input(f"Download subtitle for {self.main_title}? (y)es/(no): ").strip().lower()
+                if (decision in ("y", "yes", "")):
+                    run_python("subtitles.py", args=[self.vtype, self.url, self.title, str(self.season)])
+            quit()
+# --------------------------------------------------------------------- #
+
+if (__name__ == "__main__"):
+    try:
+        Main().run()
+    except Exception as e:
+        cprint(e, color="red")
+        traceback.print_exc()
+        input()
+# --------------------------------------------------------------------- #

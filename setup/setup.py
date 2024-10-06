@@ -1,41 +1,37 @@
 # Modules
-import os, webbrowser, pyperclip, subprocess, json
+import os, time, json, subprocess, webbrowser, pyperclip
+from termcolor import cprint
 from win32com.client import Dispatch
-
-import colorama
-from termcolor import colored
-from time import sleep
-# ================================================== #
+# ===================================================================== #
 
 ROOT = os.path.dirname(os.path.dirname(__file__))
 APP = "app"
-WEB_APP = "WebApp"
+WEB_APP = "web_app"
 FIDDLER_PATH = os.path.join(ROOT, APP, "fiddler")
 
 POWERSHELL = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 CONFIG_DOC = "https://docs.telerik.com/fiddler/configure-fiddler/tasks/decrypthttps"
-# -------------------------------------------------- #
+# --------------------------------------------------------------------- #
 
-os.chdir(ROOT)
-colorama.init()
-# -------------------------------------------------- #
+os.chdir(ROOT) # idk if it matters
+# --------------------------------------------------------------------- #
 
 # Helpers
 def write(text: str, color="light_yellow", t=1):
     ct = t / len(text)
     print(" ", end="")
     for c in text:
-        print(colored(c, color=color), end="", flush=True)
-        sleep(ct)
+        cprint(c, color=color, end="", flush=True)
+        time.sleep(ct)
     print()
 
 def line_next(n=75, next=True):
     print("="*n)
     if (next):
-        print(colored(" Next step: ", color="light_green"), end="")
+        cprint("\r Press enter for the next step", color="light_green", end="")
     input()
     print("="*n)
-# -------------------------------------------------- #
+# --------------------------------------------------------------------- #
 
 # Welocome
 write(" === Welcome to Moflix ===")
@@ -51,10 +47,10 @@ except subprocess.CalledProcessError:
     CHOCO_SETUP = "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"
     subprocess.run([POWERSHELL, "-Command", f'Start-Process powershell -ArgumentList "-Command {CHOCO_SETUP}" -Verb RunAs'])
 
-    FFMPEG_SETUP = "choco install ffmpeg-full"
+    FFMPEG_SETUP = "choco install ffmpeg"
     subprocess.run([POWERSHELL, "-Command", f'Start-Process powershell -ArgumentList "-Command {FFMPEG_SETUP}" -Verb RunAs'])
 line_next()
-# -------------------------------------------------- #
+# --------------------------------------------------------------------- #
 
 # Setup settings
 write("[2] Setup settings")
@@ -63,7 +59,7 @@ settings = {
     "QUALITY": "1080",
     "MOVIES_DIR": "E:\\Movies",
     "TVSHOWS_DIR": "E:\\TV Shows",
-    "SUB_LANGUAGE": "ara"
+    "BROWSER": "Google Chrome"
 }
 with open(os.path.join(ROOT, "setup", "settings.json"), "w") as settings_file:
     json.dump(settings, settings_file)
@@ -71,11 +67,11 @@ with open(os.path.join(ROOT, "setup", "settings.json"), "w") as settings_file:
 write(" Open up `settings.json`")
 write("- Make sure that you have [Movies] & [TV Shows] folders in any disk", color="white")
 write("- Set Quality [1080, 720, 480]", color="white")
-write("- Set Subtitle Language [ara, eng]", color="white")
+write("- Set your default browser [default => Google Chrome]", color="white")
 line_next()
-# -------------------------------------------------- #
+# --------------------------------------------------------------------- #
 
-# Install `Fiddler`
+# Install "Fiddler"
 write("[3] Install Fiddler")
 
 fiddler_installed = False
@@ -89,18 +85,18 @@ if (APPDATA):
 if (fiddler_installed == False):
     subprocess.run(os.path.join(ROOT, "setup", "FiddlerSetup.exe"), shell=True)
 line_next()
-# -------------------------------------------------- #
+# --------------------------------------------------------------------- #
 
-# Configure `Fiddler`
+# Configure "Fiddler"
 write("[4] Configure Fiddler to decrypt HTTPS traffic")
 write(f"Go through configuration doc -> [{CONFIG_DOC}]")
 webbrowser.open(CONFIG_DOC)
 
 subprocess.run(os.path.join(FIDDLER_PATH, "Fiddler Classic.lnk"), shell=True)
 line_next()
-# -------------------------------------------------- #
+# --------------------------------------------------------------------- #
 
-# Generate `Fiddler` script
+# Generate "Fiddler" script
 write("[5] Generate Fiddler Script")
 write("Make sure you closed Fiddler")
 
@@ -126,7 +122,7 @@ with open(os.path.join(FIDDLER_PATH, "Fiddler Script.txt"), "r+") as f:
     subprocess.run(os.path.join(FIDDLER_PATH, "Fiddler Classic.lnk"), shell=True)
 
 line_next()
-# -------------------------------------------------- #
+# --------------------------------------------------------------------- #
 
 # Desktop Shourtcut
 write("[6] Create Desktop Shortcut")
@@ -139,8 +135,8 @@ shortcut = shell.CreateShortCut(shortcut_path)
 shortcut.TargetPath = app_path
 shortcut.IconLocation = icon_path
 shortcut.Save()
-# -------------------------------------------------- #
+# --------------------------------------------------------------------- #
 
 write(f"All set now, go enjoy this useless app YOU LIFELESS PIECE OF SHIT", t=3, color="light_green")
 line_next(next=False)
-# -------------------------------------------------- #
+# --------------------------------------------------------------------- #
