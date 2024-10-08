@@ -41,15 +41,15 @@ function showResults(results) {
     // add event listener to download a result 
     let mainDivs = document.querySelectorAll(".main");
     Array.from(mainDivs).forEach(function(element) {
-        element.addEventListener('click', downloadResult);
+        element.addEventListener("click", downloadResult);
     });
 
     // add event listener to download a result subtitle manually
-    let subBtns = document.querySelectorAll(".subtitle");
+    let subBtns = document.querySelectorAll(".subtitles");
     for (let i=0; i<subBtns.length; i++) {
-        subBtns[i].addEventListener('click', (event) => {
+        subBtns[i].addEventListener("click", (event) => {
             event.stopPropagation();
-            downloadSubtitle(subBtns[i].parentElement.parentElement);
+            downloadSubtitle(subBtns[i].closest("div.main"));
         });
     }
 }
@@ -75,13 +75,6 @@ function addResult(result) {
     itemDiv.setAttribute("class", "item position-relative");
 
     let a = document.createElement("a");
-
-    let spanQuality = document.createElement("span");
-    spanQuality.setAttribute("class", "quality");
-    spanQuality.textContent = result["quality"];
-
-    let manualSubSpan = document.createElement("i");
-    manualSubSpan.setAttribute("class", "fa-regular fa-closed-captioning subtitle");
 
     // image div
     let imgDiv = document.createElement("div");
@@ -114,13 +107,12 @@ function addResult(result) {
     duration.setAttribute("class", "duration");
     if (result["duration"]) {duration.innerHTML = '<i class="fa-regular fa-clock"></i> '+result["duration"]};
     
-    let type = document.createElement("span");
-    type.setAttribute("class", "type");
-    type.textContent = result["type"];
+    let subtitles = document.createElement("span");
+    subtitles.innerHTML = '<i class="fa-regular fa-closed-captioning subtitles"></i>';
 
     info.appendChild(year);
     info.appendChild(duration);
-    info.appendChild(type);
+    info.appendChild(subtitles);
 
     // ------------- //
     
@@ -130,8 +122,6 @@ function addResult(result) {
     // ------------- //
     
     itemDiv.appendChild(a);
-    itemDiv.appendChild(spanQuality);
-    itemDiv.appendChild(manualSubSpan);
     itemDiv.appendChild(imgDiv);
     itemDiv.appendChild(detailDiv);
     // ------------- //
