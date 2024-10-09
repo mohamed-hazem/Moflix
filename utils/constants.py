@@ -28,7 +28,7 @@ else:
 # --------------------------------------------------------------------- #
 
 # Basic
-BASE_URL = "https://hdtoday.tv"
+BASE_URL = "https://hdtodayz.to"
 APP = "app"
 
 # Paths

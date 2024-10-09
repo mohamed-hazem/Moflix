@@ -93,7 +93,7 @@ class Fiddler:
 # --------------------------------------------------------------------- #
 
 class Capturer:
-    MOVIES_API = f"{BASE_URL}/ajax/movie/episodes"
+    MOVIES_API = f"{BASE_URL}/ajax/episode/list"
     SEASONS_API = f"{BASE_URL}/ajax/season/list"
     EPISODES_API = f"{BASE_URL}/ajax/season/episodes"
     EPISODES_WATCH_API = f"{BASE_URL}/ajax/episode/servers"
