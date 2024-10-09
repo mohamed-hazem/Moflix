@@ -38,9 +38,5 @@ setup/setup.bat
 
 ## Screenshots
 
-![Moflix Interface](./assets/Screenshot-1.png)
-![Moflix Interface](./assets/Screenshot-2.png)
-![Moflix Interface](./assets/Screenshot-3.png)
-![Moflix Interface](./assets/Screenshot-4.png)
-![Moflix Interface](./assets/Screenshot-5.png)
-![Moflix Interface](./assets/Screenshot-6.png)
+![Moflix Interface](./assets/screenshot-1.png)
+![Moflix Interface](./assets/screenshot-2.png)
